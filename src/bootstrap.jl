@@ -4,7 +4,19 @@
 Bootstrap a `DataFrame`, i.e. sample its rows with replacement.
 """
 function bootstrap(x::DataFrame)
-    x[StatsBase.sample(1:nrow(x), nrow(x); replace = true), :]
+    d = Distributions.DiscreteUniform(1, nrow(x))
+    x[rand(d, nrow(x)), :]
+end
+
+
+"""
+    bootstrap(x::SubDataFrame)
+
+Bootstrap a `SubDataFrame`, i.e. sample its rows with replacement.
+"""
+function bootstrap(x::SubDataFrame)
+    d = Distributions.DiscreteUniform(1, nrow(x))
+    x[rand(d, nrow(x)), :]
 end
 
 

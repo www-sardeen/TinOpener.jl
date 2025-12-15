@@ -1,0 +1,37 @@
+"""
+    categorical_to_proportion(x::BinnedCorpus, variable, ref_level;
+        expand_missing = true, shuffle = false)
+
+Transform a categorical variable into its proportion, calculated per
+time bin.
+
+The `variable` is first transformed into a vector of ones and zeroes;
+whenever the value coincides with `ref_level`, we replace the value with
+a one, otherwise we replace it with a zero. The proportion of `ref_level`
+per time bin is then calculated as the mean over this vector of ones and
+zeroes.
+
+The output is a `BinnedTimeSeries`.
+"""
+function categorical_to_proportion(x::BinnedCorpus, variable, ref_level;
+        expand_missing = true, shuffle = false)
+    data = copy(x.data)
+
+    # make response_variable numeric
+    data.resp = ifelse.(data[!, variable] .== ref_level, 1, 0)
+
+    # obtain means per dates
+    if shuffle
+        data = @pipe groupby(data, :date) |> combine(_, bootstrap)
+    end
+
+    data = @pipe groupby(data, :date) |> combine(_, :resp => Statistics.mean => :value, nrow => :n)
+
+    # when a date has no data, flag this up explicitly as missing
+    if expand_missing
+        data = @pipe leftjoin(DataFrame(date = minimum(data.date):x.bin_resolution:maximum(data.date)), data; on = :date) |> sort(_, :date)
+    end
+
+    BinnedTimeSeries(data, x.bin_resolution, false)
+end
+

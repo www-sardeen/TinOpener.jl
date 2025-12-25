@@ -62,3 +62,38 @@ mutable struct SLSSM <: AbstractInvariantLinearGaussianSSM
     Q::Matrix{Float64}
 end
 
+
+"""
+    simulate
+
+Fimulate an `AbstractInvariantLinearGaussianSSM` for `iter` time steps
+from an initial state sampled from distribution `dist0`.
+
+Returns the simulated series of states, along with simulated series
+of observations.
+"""
+function simulate(model::AbstractInvariantLinearGaussianSSM;
+        iter::Int,
+        dist0)
+    states = []
+    obs = []
+
+    distH = Distributions.MvNormal(model.H)
+    distQ = Distributions.MvNormal(model.Q)
+
+    push!(states, rand(dist0))
+
+    for t in 1:iter
+        newstate = model.T * states[end] + model.R * rand(distQ)
+        push!(states, newstate)
+        push!(obs, model.Z * newstate + rand(distH))
+    end
+
+    (states = states, observations = obs)
+end
+
+
+
+
+
+

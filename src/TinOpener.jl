@@ -54,6 +54,7 @@ export logit
 export loglikelihood
 export impute_kalman
 export shuffle
+export simulate
 export smooth!
 export transfer_entropy
 export TE_permutation_test

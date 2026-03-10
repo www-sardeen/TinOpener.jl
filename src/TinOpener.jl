@@ -5,6 +5,10 @@ using Associations
 using CategoricalArrays
 using DataFrames
 using Pipe
+using Optimization
+import OptimizationOptimJL
+import ADTypes
+import FiniteDiff
 
 import Dates
 import Distributions
@@ -33,6 +37,8 @@ export BinnedData
 export BinnedTimeSeries
 export InvariantKalmanRecursion
 export MomentumCoupledSLSSM
+export StadlerMomentumCoupledSLSSM
+export AmbiguityCoupledSLSSM
 export SLSSM
 export TEPermutationTestResult
 
@@ -43,6 +49,7 @@ export bootstrap
 export binary_to_proportion
 export expand_missing
 export filter!
+export fit_restricted_SLSSM
 export forward!
 export get_filtered_states
 export get_filtered_variances

@@ -13,17 +13,17 @@ import FiniteDiff
 import Dates
 import Distributions
 import LinearAlgebra
-import RCall
+#import RCall
 import Statistics
 import TimeseriesSurrogates
 
 # source files
-include("structs.jl")
+#include("structs.jl")
 
 include("binning.jl")
 include("bootstrap.jl")
-include("entropies.jl")
-include("imputation.jl")
+#include("entropies.jl")
+#include("imputation.jl")
 include("ssm.jl")
 include("kalman.jl")
 include("proportions.jl")
@@ -37,10 +37,8 @@ export BinnedData
 export BinnedTimeSeries
 export InvariantKalmanRecursion
 export MomentumCoupledSLSSM
-export StadlerMomentumCoupledSLSSM
-export AmbiguityCoupledSLSSM
 export SLSSM
-export TEPermutationTestResult
+#export TEPermutationTestResult
 
 # exports (functions)
 export aic
@@ -64,6 +62,6 @@ export shuffle
 export simulate
 export smooth!
 export transfer_entropy
-export TE_permutation_test
+#export TE_permutation_test
 
 end

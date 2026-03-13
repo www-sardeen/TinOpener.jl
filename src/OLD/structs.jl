@@ -4,7 +4,7 @@
 A data structure containing a time-binned dataframe. Fields:
 
 - `data`: the dataframe
-- `bin_resolution`: binning resolution (see `bin_time`)
+- `bin_resolution`: binning resolution (see [`bin_time`](@ref))
 - `midpoints`: midpoints of the time bins on the original time scale
 """
 mutable struct BinnedData

@@ -1,6 +1,23 @@
 """
+    BinnedTimeSeries
+
+A data structure containing a time series produced by binning
+a dataframe. Fields:
+
+- `data`: the time series
+- `bin_resolution`: binning resolution (see [`bin_time`](@ref))
+- `midpoints`: midpoints of the time bins on the original time scale
+"""
+mutable struct BinnedTimeSeries
+    data::DataFrame
+    bin_resolution::Int
+    midpoints::Vector{Float64}
+end
+
+
+"""
     binary_to_proportion(x::BinnedData, variable, ref_level;
-        shuffle = false, α = 0)
+                         shuffle = false, α = 0)
 
 Transforms a binary categorical variable into its proportion, 
 calculated per time bin.
@@ -17,7 +34,9 @@ taken per each time bin.
 The keyword argument `α` can be used to perform additive smoothing. For
 instance, setting `α = 1` gives add-one (Laplace) smoothing.
 
-The output is a `BinnedTimeSeries`.
+## Value
+
+The output is a [`BinnedTimeSeries`](@ref).
 """
 function binary_to_proportion(x::BinnedData, variable, ref_level;
         shuffle = false, α = 0)
@@ -43,9 +62,9 @@ end
 
 
 """
-    expand_missing(x::BinnedSTimeSeries)
+    expand_missing(x::BinnedTimeSeries)
 
-Expands the data in a `BinnedTimeSeries` so that time bins with no data
+Expands the data in a [`BinnedTimeSeries`](@ref) so that time bins with no data
 are explicitly flagged as having `missing` proportions.
 """
 function expand_missing(x::BinnedTimeSeries)

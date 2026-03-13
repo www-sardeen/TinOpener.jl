@@ -8,19 +8,9 @@ abstract type AbstractInvariantLinearGaussianSSM end
 
 
 """
-    MomentumCoupledSLSSM <: AbstractInvariantLinearGaussianSSM
+    MomentumCoupledSLSSM
 
 A momentum-coupled stochastic logistic state space model.
-
-## Fields
-
-- `Z`
-- `T`
-- `R`
-- `H`
-- `Q`
-
-For the meaning of these, see [`InvariantKalmanRecursion`](@ref).
 """
 mutable struct MomentumCoupledSLSSM <: AbstractInvariantLinearGaussianSSM
     Z::Matrix{Float64}
@@ -30,19 +20,6 @@ mutable struct MomentumCoupledSLSSM <: AbstractInvariantLinearGaussianSSM
     Q::Matrix{Float64}
 end
 
-
-"""
-    MomentumCoupledSLSSM(κ:Float64,
-                         κp::Float64,
-                         σ2y::Float64,
-                         σ2z::Float64,
-                         σ2s::Float64,
-                         qy::Float64,
-                         qz::Float64,
-                         qs::Float64)
-
-Constructor for a [`MomentumCoupledSLSSM`](@ref).
-"""
 function MomentumCoupledSLSSM(κ::Float64,
         κp::Float64,
         σ2y::Float64,
@@ -57,20 +34,22 @@ function MomentumCoupledSLSSM(κ::Float64,
 
     #=
     T = [1.0 1.0 0.0 0.0 0.0 0.0;
-    0.0 1.0 0.0 κ 0.0 -κ;
-    #0.0 1.0 0.0 κ 0.0 0.0;
-    1.0 0.0 0.0 0.0 0.0 0.0;
-    0.0 0.0 0.0 1.0 1.0 0.0;
-    κp 0.0 -κp 0.0 1.0 0.0;
-    #κp 0.0 0.0 0.0 1.0 0.0;
-    0.0 0.0 0.0 1.0 0.0 0.0]
-    =#
+         0.0 1.0 0.0 κ 0.0 -κ;
+         #0.0 1.0 0.0 κ 0.0 0.0;
+         1.0 0.0 0.0 0.0 0.0 0.0;
+         0.0 0.0 0.0 1.0 1.0 0.0;
+         κp 0.0 -κp 0.0 1.0 0.0;
+         #κp 0.0 0.0 0.0 1.0 0.0;
+         0.0 0.0 0.0 1.0 0.0 0.0]
+         =#
 
     T = [1.0 1.0 0.0 κ 0.0 -κ;
          0.0 1.0 0.0 0.0 0.0 0.0;
+         #0.0 1.0 0.0 κ 0.0 0.0;
          1.0 0.0 0.0 0.0 0.0 0.0;
          κp 0.0 -κp 1.0 1.0 0.0;
          0.0 0.0 0.0 0.0 1.0 0.0;
+         #κp 0.0 0.0 0.0 1.0 0.0;
          0.0 0.0 0.0 1.0 0.0 0.0]
 
     H = [σ2y 0.0;
@@ -83,20 +62,153 @@ function MomentumCoupledSLSSM(κ::Float64,
 end
 
 
+mutable struct StadlerMomentumCoupledSLSSM <: AbstractInvariantLinearGaussianSSM
+    Z::Matrix{Float64}
+    T::Matrix{Float64}
+    R::Matrix{Float64}
+    H::Matrix{Float64}
+    Q::Matrix{Float64}
+end
+
+
+function StadlerMomentumCoupledSLSSM(κ::Float64,
+        κp::Float64,
+        α::Float64,
+        αp::Float64,
+        γ::Float64,
+        γp::Float64,
+        σ2y::Float64,
+        σ2z::Float64,
+        σ2s::Float64,
+        qy::Float64,
+        qz::Float64,
+        qs::Float64)
+    Z = zeros(2, 8)
+    Z[1,1] = 1.0
+    Z[2,5] = 1.0
+
+    T = [1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0;
+         0.0 1.0 0.0 0.0 0.0 0.0 κp -κp;
+         γ 0.0 1.0-γ 0.0 0.0 0.0 0.0 0.0;
+         α 0.0 1.0-α 0.0 0.0 0.0 0.0 0.0;
+         0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0;
+         0.0 0.0 κ -κ 0.0 1.0 0.0 0.0;
+         0.0 0.0 0.0 0.0 γp 0.0 1.0-γp 0.0;
+         0.0 0.0 0.0 0.0 αp 0.0 1.0-αp 0.0]
+
+    H = [σ2y 0.0;
+         0.0 qy * σ2y]
+
+    Q = zeros(8, 8)
+    Q[LinearAlgebra.diagind(Q)] = [σ2z, σ2s, 0.0, 0.0, qz * σ2z, qs * σ2s, 0.0, 0.0]
+
+    StadlerMomentumCoupledSLSSM(Z, T, LinearAlgebra.I(8), H, Q)
+end
+
+
+mutable struct AmbiguityCoupledSLSSM <: AbstractInvariantLinearGaussianSSM
+    Z::Matrix{Float64}
+    T::Matrix{Float64}
+    R::Matrix{Float64}
+    H::Matrix{Float64}
+    Q::Matrix{Float64}
+end
+
+function AmbiguityCoupledSLSSM(κ::Float64,
+        σ2z::Float64,
+        σ2s::Float64,
+        σ2v::Float64,
+        σ2y::Float64,
+        σ2yp::Float64)
+    Z = zeros(2, 4)
+    Z[1,1] = 1.0
+    Z[2,3] = 1.0
+
+    #T = [1.0  1.0   0.0   0.0;
+    #     0.0  1.0   κ     κ;
+    T = [1.0  1.0   κ   κ;
+         0.0  1.0   0.0     0.0;
+         0.0  0.0   1.0   0.0;
+         0.0  0.0   0.0   1.0]
+
+    H = [σ2y 0.0;
+         0.0 σ2yp]
+
+    Q = zeros(4, 4)
+    Q[LinearAlgebra.diagind(Q)] = [σ2z, σ2s, σ2v, 0.0]
+
+    AmbiguityCoupledSLSSM(Z, T, LinearAlgebra.I(4), H, Q)
+end
+
+
+mutable struct Ambiguity2CoupledSLSSM <: AbstractInvariantLinearGaussianSSM
+    Z::Matrix{Float64}
+    T::Matrix{Float64}
+    R::Matrix{Float64}
+    H::Matrix{Float64}
+    Q::Matrix{Float64}
+end
+
+function Ambiguity2CoupledSLSSM(κ1::Float64,
+        κ2::Float64,
+        σ2y::Float64,
+        σ2yp::Float64,
+        σ2z::Float64,
+        σ2v::Float64,
+        σ2βs::Float64)
+    Z = zeros(2, 3)
+    Z[1,1] = 1.0
+    Z[2,2] = 1.0
+
+    T = [1.0  κ1   κ2;
+         0.0  1.0 0.0;
+         0.0  0.0 1.0]
+
+    H = [σ2y 0.0;
+         0.0 σ2yp]
+
+    Q = zeros(3, 3)
+    Q[LinearAlgebra.diagind(Q)] = [σ2z, σ2v, σ2βs]
+
+    Ambiguity2CoupledSLSSM(Z, T, LinearAlgebra.I(3), H, Q)
+end
+
+
+mutable struct Ambiguity2BCoupledSLSSM <: AbstractInvariantLinearGaussianSSM
+    Z::Matrix{Float64}
+    T::Matrix{Float64}
+    R::Matrix{Float64}
+    H::Matrix{Float64}
+    Q::Matrix{Float64}
+end
+
+function Ambiguity2BCoupledSLSSM(σ2y::Float64,
+        σ2yp::Float64,
+        σ2z::Float64,
+        σ2v::Float64)
+    Z = zeros(2, 2)
+    Z[1,1] = 1.0
+    Z[2,2] = 1.0
+
+    T = [1.0  0.0;
+         0.0  1.0]
+
+    H = [σ2y 0.0;
+         0.0 σ2yp]
+
+    Q = zeros(2, 2)
+    Q[LinearAlgebra.diagind(Q)] = [σ2z, σ2v]
+
+    Ambiguity2BCoupledSLSSM(Z, T, LinearAlgebra.I(2), H, Q)
+end
+
+
+
+
 """
-    SLSSM <: AbstractInvariantLinearGaussianSSM
+    SLSSM
 
 A one-dimensional stochastic logistic state space model.
-
-## Fields
-
-- `Z`
-- `T`
-- `R`
-- `H`
-- `Q`
-
-For the meaning of these, see [`InvariantKalmanRecursion`](@ref).
 """
 mutable struct SLSSM <: AbstractInvariantLinearGaussianSSM
     Z::Matrix{Float64}
@@ -106,14 +218,6 @@ mutable struct SLSSM <: AbstractInvariantLinearGaussianSSM
     Q::Matrix{Float64}
 end
 
-
-"""
-    SLSSM(σ2z::Float64,
-          σ2s::Float64,
-          σ2y::Float64)
-
-Constructor for an [`SLSSM`](@ref).
-"""
 function SLSSM(σ2z::Float64,
         σ2s::Float64,
         σ2y::Float64)
@@ -128,9 +232,7 @@ end
 
 
 """
-    simulate(model::AbstractInvariantLinearGaussianSSM;
-             iter::Int,
-             dist0)
+    simulate
 
 Fimulate an `AbstractInvariantLinearGaussianSSM` for `iter` time steps
 from an initial state sampled from distribution `dist0`.

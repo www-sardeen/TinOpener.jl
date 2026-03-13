@@ -7,10 +7,36 @@ abstract type AbstractKalmanRecursion end
 
 
 """
-    InvariantKalmanRecursion
+    InvariantKalmanRecursion <: AbstractKalmanRecursion
 
 A struct to hold the matrices and vectors required for Kalman filtering 
 and smoothing in the case the model matrices are time-invariant.
+
+## Fields
+
+For the meaning of the fields of this struct, consult
+Durbin & Koopman (2012), particularly the filtering and smoothing
+recursion equations (4.24) and (4.44) and their surrounding text.
+
+- `Z` -- the observation matrix
+- `T` -- the process matrix
+- `R` -- process noise matrix
+- `H` -- covariances of observation noise
+- `Q` -- covariances of process noise
+- `a` -- state means
+- `v` -- difference between observation and expected observation (i.e. forecast error, i.e. "innovation")
+- `F` -- variance of `v`
+- `P` -- state variances
+- `K` -- Kalman gain
+- `αhat` -- smoothed state mean
+- `r` -- weighted sum of innovations, used in the computation of `αhat`
+- `N` -- used in the computation of `V`
+- `V` -- smoothed state variance
+
+## Reference
+
+Durbin, J. & Koopman, S. J. (2012) Time series analysis by state
+space methods. 2nd edition. Oxford: Oxford University Press.
 """
 mutable struct InvariantKalmanRecursion <: AbstractKalmanRecursion
     Z::Matrix{Float64}
@@ -35,8 +61,13 @@ end
                      a::Vector{Float64},
                      P::Matrix{Float64})
 
-Initialize a Kalman recursion for an `AbstractInvariantLinearGaussianSSM`
-with initial state mean `a` and variance `P`.
+Initialize a Kalman recursion for any descendant of
+[`AbstractInvariantLinearGaussianSSM`](@ref),
+with (known/assumed) initial state mean `a` and variance `P`.
+
+## Value
+
+An [InvariantKalmanRecursion](@ref) object.
 """
 function kalman_recursion(model::AbstractInvariantLinearGaussianSSM,
         a::Vector{Float64},
@@ -68,7 +99,7 @@ end
 
 """
     forward!(kr::InvariantKalmanRecursion,
-            y::Vector{Float64})
+             y::Vector{Float64})
 
 Update a Kalman recursion with one data point `y`.
 """
@@ -125,15 +156,33 @@ end
 
 """
     get_filtered_states(kr::AbstractKalmanRecursion)
-    get_filtered_variances(kr::AbstractKalmanRecursion)
-    get_smoothed_states(kr::AbstractKalmanRecursion)
-    get_smoothed_variances(kr::AbstractKalmanRecursion)
 
-Getters for filtered and smoothed states and variances.
+Get the filtered states from a Kalman recursion.
 """
 get_filtered_states(kr::AbstractKalmanRecursion) = kr.a[2:(end - 0)]
+
+
+"""
+    get_filtered_variances(kr::AbstractKalmanRecursion)
+
+Get the filtered variances from a Kalman recursion.
+"""
 get_filtered_variances(kr::AbstractKalmanRecursion) = kr.P[2:(end - 0)]
+
+
+"""
+    get_smoothed_states(kr::AbstractKalmanRecursion)
+
+Get the smoothed states from a Kalman recursion.
+"""
 get_smoothed_states(kr::AbstractKalmanRecursion) = kr.αhat
+
+
+"""
+    get_smoothed_variances(kr::AbstractKalmanRecursion)
+
+Get the smoothed variances from a Kalman recursion.
+"""
 get_smoothed_variances(kr::AbstractKalmanRecursion) = kr.V
 
 

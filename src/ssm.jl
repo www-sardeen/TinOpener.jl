@@ -1,11 +1,15 @@
+abstract type AbstractSSM end
+
+
 """
     AbstractInvariantLinearGaussianSSM
 
 Represents a linear Gaussian state space model with time-invariant
 matrices.
 """
-abstract type AbstractInvariantLinearGaussianSSM end
+abstract type AbstractInvariantLinearGaussianSSM <: AbstractSSM end
 
+abstract type AbstractLinearGaussianSSM <: AbstractSSM end
 
 """
     MomentumCoupledSLSSM <: AbstractInvariantLinearGaussianSSM
@@ -14,20 +18,30 @@ A momentum-coupled stochastic logistic state space model.
 
 ## Fields
 
+- `modeltype` -- a `String` identifying the type of the model
+- `id` -- a `String` identifying the model instance
+- `parnames` -- a vector of `String`s supplying names of model parameters
 - `Z`
 - `T`
 - `R`
 - `H`
 - `Q`
+- `a0` -- initial state means
+- `P0` -- initial state variances
 
 For the meaning of these, see [`InvariantKalmanRecursion`](@ref).
 """
 mutable struct MomentumCoupledSLSSM <: AbstractInvariantLinearGaussianSSM
+    modeltype::String
+    id::String
+    parnames::Vector{String}
     Z::Matrix{Float64}
     T::Matrix{Float64}
     R::Matrix{Float64}
     H::Matrix{Float64}
     Q::Matrix{Float64}
+    a0::Vector{Float64}
+    P0::Matrix{Float64}
 end
 
 
@@ -39,7 +53,11 @@ end
                          σ2s::Float64,
                          qy::Float64,
                          qz::Float64,
-                         qs::Float64)
+                         qs::Float64,
+                         a0::Vector{Float64},
+                         P0::Matrix{Float64},
+                         id::String,
+                         parnames::Vector{String})
 
 Constructor for a [`MomentumCoupledSLSSM`](@ref).
 """
@@ -50,7 +68,11 @@ function MomentumCoupledSLSSM(κ::Float64,
         σ2s::Float64,
         qy::Float64,
         qz::Float64,
-        qs::Float64)
+        qs::Float64,
+        a0::Vector{Float64},
+        P0::Matrix{Float64},
+        id::String,
+        parnames::Vector{String})
     Z = zeros(2, 6)
     Z[1,1] = 1.0
     Z[2,4] = 1.0
@@ -79,7 +101,7 @@ function MomentumCoupledSLSSM(κ::Float64,
     Q = zeros(6, 6)
     Q[LinearAlgebra.diagind(Q)] = [σ2z, σ2s, 0.0, qz * σ2z, qs * σ2s, 0.0]
 
-    MomentumCoupledSLSSM(Z, T, LinearAlgebra.I(6), H, Q)
+    MomentumCoupledSLSSM("MomentumCoupledSLSSM", id, parnames, Z, T, LinearAlgebra.I(6), H, Q, a0, P0)
 end
 
 
@@ -90,40 +112,69 @@ A one-dimensional stochastic logistic state space model.
 
 ## Fields
 
+- `modeltype` -- a `String` identifying the type of the model
+- `id` -- a `String` identifying the model instance
 - `Z`
 - `T`
 - `R`
 - `H`
 - `Q`
+- `a0` -- initial state means
+- `P0` -- initial state variances
 
 For the meaning of these, see [`InvariantKalmanRecursion`](@ref).
 """
 mutable struct SLSSM <: AbstractInvariantLinearGaussianSSM
+    modeltype::String
+    id::String
+    parnames::Vector{String}
     Z::Matrix{Float64}
     T::Matrix{Float64}
     R::Matrix{Float64}
     H::Matrix{Float64}
     Q::Matrix{Float64}
+    a0::Vector{Float64}
+    P0::Matrix{Float64}
+end
+
+
+mutable struct SSM <: AbstractLinearGaussianSSM
+    modeltype::String
+    id::String
+    parnames::Vector{String}
+    Z::Vector{Matrix{Float64}}
+    T::Vector{Matrix{Float64}}
+    R::Vector{Matrix{Float64}}
+    H::Vector{Matrix{Float64}}
+    Q::Vector{Matrix{Float64}}
+    a0::Vector{Float64}
+    P0::Matrix{Float64}
 end
 
 
 """
     SLSSM(σ2z::Float64,
           σ2s::Float64,
-          σ2y::Float64)
+          σ2y::Float64,
+          a0::Vector{Float64},
+          P0::Matrix{Float64},
+          id::String)
 
 Constructor for an [`SLSSM`](@ref).
 """
 function SLSSM(σ2z::Float64,
         σ2s::Float64,
-        σ2y::Float64)
+        σ2y::Float64,
+        a0::Vector{Float64},
+        P0::Matrix{Float64},
+        id::String)
     Z = [1.0 0.0]
     T = [1.0 1.0; 0.0 1.0]
     R = LinearAlgebra.I(2)
     H = Matrix([σ2y]')
     Q = [σ2z 0.0; 0.0 σ2s]
 
-    return SLSSM(Z, T, R, H, Q)
+    return SLSSM("SLSSM", id, Z, T, R, H, Q, a0, P0)
 end
 
 

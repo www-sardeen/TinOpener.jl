@@ -1,0 +1,7 @@
+# Parallel processing
+
+```@docs
+mapply
+```
+
+

@@ -30,3 +30,13 @@ where ``L`` is the likelihood.
 aic(k::Int, logL::Float64) = 2*k - 2*logL
 
 
+"""
+    aicc(k::Int, logL::Float64, n::Int)
+
+Small-sample corrected Akaike information criterion for model with log-likelihood `logL`, number
+of model parameters `k` and sample size `n`, i.e. ``\\textnormal{AICc} = 2k - \\log L + \\frac{2k^2 + 2k}{n - k - 1}``
+where ``L`` is the likelihood.
+"""
+aicc(k::Int, logL::Float64, n::Int) = 2*k - 2*logL + (2*k^2 + 2*k)/(n - k - 1)
+
+

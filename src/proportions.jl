@@ -38,7 +38,7 @@ instance, setting `α = 1` gives add-one (Laplace) smoothing.
 
 The output is a [`BinnedTimeSeries`](@ref).
 """
-function binary_to_proportion(x::BinnedData, variable, ref_level;
+function binary_to_proportion(x::AbstractBinnedData, variable, ref_level;
         shuffle = false, α = 0)
     data = copy(x.data)
 

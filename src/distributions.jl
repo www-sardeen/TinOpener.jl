@@ -38,6 +38,14 @@ mutable struct BiBeta
 end
 
 
+"""
+    get_parameters(d::BiBeta)
+
+Return the parameters of a `BiBeta` distribution as a vector.
+"""
+get_parameters(d::BiBeta) = [d.α11, d.α10, d.α01, d.α00]
+
+
 # shorthand for the logarithmic gamma function
 #
 lg(x::Float64) = SpecialFunctions.loggamma(x)

@@ -75,6 +75,7 @@ export fit_restricted_SLSSM
 export forward!
 export get_filtered_states
 export get_filtered_variances
+export get_parameters
 export get_smoothed_states
 export get_smoothed_variances
 export kalman_recursion

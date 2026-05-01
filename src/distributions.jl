@@ -118,6 +118,7 @@ function momentmatch(μ1, μ2, var1, var2, ρ)
     nu = μ2
     V1 = var1
     V2 = var2
+    rho = ρ
 
     function objective(u)
         a11 = exp(u[1])

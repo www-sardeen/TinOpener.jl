@@ -11,10 +11,6 @@ simulate
 ## Types and constructors
 
 ```@docs
-MomentumCoupledSLSSM
-MomentumCoupledSLSSM(::Float64, ::Float64, ::Float64, ::Float64, ::Float64, ::Float64, ::Float64, ::Float64)
-SLSSM
-SLSSM(::Float64, ::Float64, ::Float64)
 ```
 
 
@@ -22,4 +18,6 @@ SLSSM(::Float64, ::Float64, ::Float64)
 
 ```@docs
 AbstractInvariantLinearGaussianSSM
+AbstractLinearGaussianSSM
+KalmanRecursion
 ```

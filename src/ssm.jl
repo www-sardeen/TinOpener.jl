@@ -9,6 +9,9 @@ matrices.
 """
 abstract type AbstractInvariantLinearGaussianSSM <: AbstractSSM end
 
+"""
+    AbstractLinearGaussianSSM
+"""
 abstract type AbstractLinearGaussianSSM <: AbstractSSM end
 
 """

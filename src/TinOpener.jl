@@ -13,6 +13,7 @@ import OptimizationOptimJL
 import ADTypes
 import FiniteDiff
 import SciMLBase
+import SpecialFunctions
 
 import Dates
 import Distributions
@@ -36,6 +37,8 @@ include("parallel.jl")
 include("proportions.jl")
 include("surrogates.jl")
 include("utils.jl")
+include("distributions.jl")
+include("convolutions.jl")
 
 # exports (structs)
 export AbstractInvariantLinearGaussianSSM
@@ -53,13 +56,17 @@ export KalmanRecursion
 export AbstractLinearGaussianSSM
 export SSM
 export AbstractSSM
+export BiBeta
 
 # exports (functions)
 export aic
+export aicc
 export bin_time
 export bin_time_natural
 export bootstrap
 export binary_to_proportion
+export bzc_kernel
+export convolve
 export expand_missing
 export filter!
 export fit_SSM
@@ -73,13 +80,20 @@ export kalman_recursion
 export logistic
 export logit
 export loglikelihood
+export logpdf
 export impute_kalman
+export impute_last!
 export mapply
+export momentmatch
+export pdf
 export shuffle
 export simulate
 export smooth!
+export strong_kernel
 export squeeze_time
 export transfer_entropy
+export weak_kernel
+export zc_kernel
 #export TE_permutation_test
 
 end

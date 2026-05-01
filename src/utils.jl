@@ -40,3 +40,29 @@ where ``L`` is the likelihood.
 aicc(k::Int, logL::Float64, n::Int) = 2*k - 2*logL + (2*k^2 + 2*k)/(n - k - 1)
 
 
+"""
+    impute_last!(x)
+
+Replaces each `missing` value in vector `x` with the most recent
+non-missing value in that vector, in-place.
+"""
+function impute_last!(x)
+    for i in 1:length(x)
+        if ismissing(x[i])
+            x[i] = x[i-1]
+        end
+    end
+end
+
+
+"""
+    impute_last!(x::BinnedTimeSeries, column::Symbol)
+
+Replaces each `missing` value in specified `column` of a `BinnedTimeSeries`
+with the most recent non-missing value (in-place).
+"""
+function impute_last!(x::BinnedTimeSeries, column::Symbol)
+    impute_last!(x.data[column])
+end
+
+

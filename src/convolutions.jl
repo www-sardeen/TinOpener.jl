@@ -10,7 +10,7 @@ In other words, compute the quantity
 (K \\star x)_t = \\sum_{s=0}^S K(s) x(t-s).
 ```
 """
-function convolve(x::Vector{Float64}, t::Int, K::Function, M::Int)
+function convolve(x::Vector{Float64}, t::Int, K::Function, S::Int)
     sum([K(s) * x[t - s] for s in 0:S])
 end
 

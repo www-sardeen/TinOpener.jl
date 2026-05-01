@@ -62,9 +62,9 @@ function logpdf(d::BiBeta, x::Vector{Float64})
 
     domain = (maximum([0.0, x[1] + x[2] - 1.0]), minimum(x))
 
-    prob = IntegralProblem(f, domain)
+    prob = Integrals.IntegralProblem(f, domain)
 
-    sol = solve(prob, HCubatureJL(); reltol = 1e-3, abstol = 1e-3)
+    sol = solve(prob, Integrals.HCubatureJL(); reltol = 1e-3, abstol = 1e-3)
 
     return liB(d) + log(sol.u)
 end

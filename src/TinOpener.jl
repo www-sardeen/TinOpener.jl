@@ -14,6 +14,7 @@ import ADTypes
 import FiniteDiff
 import SciMLBase
 import SpecialFunctions
+import Integrals
 
 import Dates
 import Distributions

@@ -1,6 +1,6 @@
 name = "TinOpener"
 uuid = "6fd7c553-ba03-4330-918c-b18410755bc0"
-version = "0.0.6"
+version = "0.0.7"
 authors = ["Henri Kauhanen"]
 
 [deps]

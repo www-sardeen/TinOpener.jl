@@ -111,18 +111,22 @@ pdf(d::BiBeta, x::Vector{Float64};
 
 
 """
-    momentmatch(μ1, μ2, var1, var2, ρ)
+    momentmatch(μ1, μ2, var1, var2, ρ; tol = 1e-15)
 
 Find a bivariate beta distribution (`BiBeta`), i.e. its parameters, by
 moment-matching.
 
-# Arguments
+# Positional arguments
 
 - `μ1`: mean of first covariate
 - `μ2`: mean of second covariate
 - `var1`: variance of first covariate
 - `var2`: variance of second covariate
 - `ρ`: correlation between covariates
+
+# Keyword arguments
+
+- `tol`: convergence tolerance
 
 # Value
 
@@ -143,7 +147,7 @@ Olkin, I. & Trikalinos, T. A. (2015) Constructions for a bivariate
 beta distributions. *Statistics and Probability Letters*, 96, 54--60.
 http://dx.doi.org/10.1016/j.spl.2014.09.013.
 """
-function momentmatch(μ1, μ2, var1, var2, ρ)
+function momentmatch(μ1, μ2, var1, var2, ρ; tol = 1e-15)
     mu = μ1
     nu = μ2
     V1 = var1
@@ -169,7 +173,7 @@ function momentmatch(μ1, μ2, var1, var2, ρ)
     prob = OptimizationProblem(optf, u0, nothing)
 
     # obtain solution
-    sol = solve(prob, OptimizationOptimJL.NelderMead())
+    sol = solve(prob, OptimizationOptimJL.NelderMead(); g_tol = tol)
 
     return (d = BiBeta(exp.(sol.u)...), sol = sol)
 end

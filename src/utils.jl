@@ -66,3 +66,57 @@ function impute_last!(x::BinnedTimeSeries, column::Symbol)
 end
 
 
+# rising factorial
+#
+rf(x::Float64, n::Int64) = SpecialFunctions.gamma(x + n) / SpecialFunctions.gamma(x)
+
+
+"""
+    appell_F1(a, b1, b2, c, x, y; tol = 1e-3)
+
+Compute the Appell hypergeometric series ``F_1`` of two variables, `x`
+and `y`, with parameters `a`, `b1` and `b2`.
+
+The implementation assumes that the series is convergent, i.e.
+that ``|x| < 1`` and ``|y| < 1``. If this is not the case, the
+function exits with an error.
+
+The infinite series is computed up to a tolerance of `tol`, with
+a default value of `1e-3`. In other words, the computation is
+terminated once two consecutive members of the series are with
+`tol` of each other.
+"""
+function appell_F1(a::Float64,
+        b1::Float64,
+        b2::Float64,
+        c::Float64,
+        x::Float64,
+        y::Float64;
+        tol = 1e-6)
+    if abs(x) >= 1 || abs(y) >= 1
+        throw("need abs(x) < 1 and abs(y) < 1 for series to converge")
+    end
+
+    F1 = 0.0
+
+    error = tol + 1.0
+
+    m = 0
+
+    while (error > tol)
+        oldF1 = F1
+
+        for n in 0:m
+            F1 += ((rf(a, m+n) * rf(b1, m) * rf(b2, n)) / (rf(c, m+n) * factorial(m) * factorial(n))) * x^m * y^n
+        end
+
+        error = abs(oldF1 - F1)
+
+        m += 1
+    end
+
+    return F1
+end
+
+
+

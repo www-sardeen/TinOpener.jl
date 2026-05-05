@@ -58,15 +58,19 @@ liB(d::BiBeta) = lg(d.α11 + d.α10 + d.α01 + d.α00) - lg(d.α11) - lg(d.α10)
 
 
 """
-    logpdf(d::BiBeta, x::Vector{Float64})
+    logpdf(d::BiBeta, x::Vector{Float64};
+           solver = Integrals.HCubatureJL(),
+           reltol = 1e-6,
+           abstol = 1e-6,
+           domain_padding = 1e-6)
 
 Logarithmic density of the bivariate beta distribution `d`,
 evaluated at point `x`.
 """
 function logpdf(d::BiBeta, x::Vector{Float64};
         solver = Integrals.HCubatureJL(),
-        reltol = 1e-3,
-        abstol = 1e-3,
+        reltol = 1e-6,
+        abstol = 1e-6,
         domain_padding = 1e-6)
     f(u, p) = u^(d.α11 - 1) * (x[1] - u)^(d.α10 - 1) * (x[2] - u)^(d.α01 - 1) * (1 - x[1] - x[2] + u)^(d.α00 - 1)
 
@@ -85,13 +89,25 @@ end
 
 
 """
-    pdf(d::BiBeta, x::Vector{Float64})
+    pdf(d::BiBeta, x::Vector{Float64};
+        solver = Integrals.HCubatureJL(),
+        reltol = 1e-6,
+        abstol = 1e-6,
+        domain_padding = 1e-6)
 
 Density of the bivariate beta distribution `d`, evaluated at point `x`.
 
 The integral in the density is solved numerically using FIXME.
 """
-pdf(d::BiBeta, x::Vector{Float64}) = exp(logpdf(d, x))
+pdf(d::BiBeta, x::Vector{Float64};
+    solver = Integrals.HCubatureJL(),
+    reltol = 1e-6,
+    abstol = 1e-6,
+    domain_padding = 1e-6) = exp(logpdf(d, x;
+                                        solver = solver,
+                                        reltol = reltol,
+                                        abstol = abstol,
+                                        domain_padding = domain_padding))
 
 
 """

@@ -62,6 +62,7 @@ export BiBeta
 # exports (functions)
 export aic
 export aicc
+#export appell_F1
 export bin_time
 export bin_time_natural
 export bootstrap

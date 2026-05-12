@@ -124,3 +124,39 @@ function bin_time(data::DataFrame,
 
     BinnedData(x, nbins, mids)
 end
+
+
+function bin_time(data::DataFrame,
+        bin_length::Float64;
+        bin_offset = 0.0,
+        time_variable = "date")
+    # make a deep copy of dataframe
+    x = deepcopy(data)
+
+    # left and right values of time variable
+    left, right = extrema(x[!, time_variable])
+
+    # delta between left and right
+    delta = right - left
+
+    # delta between left point of leftmost bin, taking
+    # offset into account, and right point of data
+    delta_overall = delta + bin_offset
+
+    # how many bins we need to cover all data
+    nbins = round(Int, ceil(delta_overall / bin_length)) + 1
+
+    # cut points
+    cuts = range(; start = left - bin_offset, step = bin_length, length = nbins)
+
+    # midpoints
+    mids = [cuts[i] + (cuts[i+1] - cuts[i])/2 for i in 1:(nbins - 1)]
+
+    # bin data
+    x.timebin = cut(x[!, time_variable], cuts; extend = true)
+
+    # convert date, which is now a CategoricalArray, into Int
+    x.timebin = levelcode.(x.timebin)
+
+    BinnedData(x, nbins, mids)
+end

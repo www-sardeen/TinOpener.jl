@@ -1,4 +1,63 @@
 """
+    AbstractModelFit
+"""
+abstract type AbstractModelFit end
+
+
+"""
+    ModelParameters
+"""
+mutable struct ModelParameters
+    parameters::DataStructures.OrderedDict
+    transformations::DataStructures.OrderedDict
+    meta::DataStructures.OrderedDict
+end
+
+
+"""
+    n_free_parameters(def::ModelParameters)
+
+Count the number of free parameters in model definition `def`,
+i.e. the number of entries in `def.parameters` which are `NaN`.
+"""
+function n_free_parameters(def::ModelParameters)
+    sum([isnan(v) ? 1 : 0 for v in values(def.parameters)])
+end
+
+
+"""
+    prepare_model(def::ModelParameters, u::Vector{Float64}, fun::Function)
+
+Prepare a model from a `ModelParameters` object, replacing the NaNs
+of free parameters with values in the optimization vector `u`, then
+applying function `fun` to the parameters to return a model that
+`fit_SSM` can use.
+"""
+function prepare_model(def::ModelParameters,
+        u::Vector{Float64},
+        fun::Function)
+    pars = deepcopy(def.parameters)
+
+    free_pars = []
+
+    ctr = 0
+    for (x,y) in pars
+        if y isa Number
+            if isnan(y)
+                ctr += 1
+                push!(free_pars, x)
+                pars[x] = def.transformations[x](u[ctr])
+            else
+                pars[x] = def.transformations[x](y)
+            end
+        end
+    end
+
+    fun(pars, free_pars, def.meta)
+end
+
+
+"""
     SSMFit
 
 The result of fitting a state space model to data; the output
@@ -18,7 +77,7 @@ of [`fit_SSM`](@ref).
 - `aic`: Akaike information criterion
 - `aicc`: Akaike information criterion, small-sample corrected
 """
-struct SSMFit
+struct SSMFit <: AbstractModelFit
     modeltype::String
     id::String
     mod::AbstractSSM
@@ -41,6 +100,7 @@ function Base.show(io::IO, m::MIME"text/plain", x::SSMFit)
     println("")
     println("Model type:\t\t$(x.modeltype)")
     println("Model ID:\t\t$(x.id)")
+    println("Converged:\t\t$(x.retcode)")
     println("Number of parameters:\t$(x.npar)")
     println("Log-likelihood:\t\t$(x.ll)")
     println("AIC:\t\t\t$(x.aic)")
@@ -103,7 +163,9 @@ function fit_SSM(fun,
         npar::Int;
         n_conv = 3,
         max_tries = 100,
-        verbose = true)
+        verbose = true,
+        very_verbose = false,
+        u0 = nothing)
 
     sol = nothing
     successes = 0
@@ -116,13 +178,17 @@ function fit_SSM(fun,
 
     while successes < n_conv && tries < max_tries
         tries += 1
-        println(tries)
+        very_verbose && print("try $tries... ")
 
         try
-            u0 = -1 .* rand(npar)
+            if isnothing(u0)
+                uu0 = -1 .* rand(npar)
+            else
+                uu0 = u0
+            end
 
             optf = OptimizationFunction(run_model_return_likelihood, ADTypes.AutoFiniteDiff())
-            prob = OptimizationProblem(optf, u0, (fun = fun, data = data))
+            prob = OptimizationProblem(optf, uu0, (fun = fun, data = data))
             sol_here = solve(prob, OptimizationOptimJL.BFGS())
 
             success = SciMLBase.successful_retcode(sol_here)
@@ -133,13 +199,16 @@ function fit_SSM(fun,
 
             if success
                 successes += 1
+                very_verbose && println("success!")
                 if sol_here.objective < objective
                     sol = sol_here
                     objective = sol_here.objective
                 end
+            else
+                very_verbose && println("")
             end
         catch e
-            println(e)
+            very_verbose && println(e)
         end
     end
 

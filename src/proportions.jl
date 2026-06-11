@@ -61,6 +61,20 @@ function binary_to_proportion(x::AbstractBinnedData, variable, ref_level;
 end
 
 
+function numeric_to_mean(x::AbstractBinnedData, variable;
+        boot = false)
+    data = copy(x.data)
+
+    if boot
+        data = @pipe groupby(data, :timebin) |> combine(_, bootstrap)
+    end
+
+    data = @pipe groupby(data, :timebin) |> combine(_, variable => Statistics.mean => :value)
+
+    return BinnedTimeSeries(data, x.bin_resolution, x.midpoints)
+end
+
+
 """
     expand_missing(x::BinnedTimeSeries)
 

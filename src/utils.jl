@@ -119,4 +119,43 @@ function appell_F1(a::Float64,
 end
 
 
+"""
+    lrtest(mod_null::AbstractModelFit, mod_alt::AbstractModelFit)
+
+Likelihood ratio test.
+"""
+function lrtest(mod_null::AbstractModelFit, mod_alt::AbstractModelFit)
+    statistic = -2 * (mod_null.ll - mod_alt.ll)
+    df = mod_alt.npar - mod_null.npar
+    pvalue = 1 - Distributions.cdf(Distributions.Chisq(df), statistic)
+
+    return (statistic = statistic, df = df, pvalue = pvalue)
+end
+
+
+"""
+    conditional_entropy(M; b = 2)
+
+Computes the conditional entropy for a matrix or matrix-like object
+`M`, taking the rows as the conditioning and the columns as the
+conditioned variable. Base of the logarithm (determining the unit)
+is given by `b`; the default is `b = 2` i.s. bits.
+"""
+function conditional_entropy(M; b = 2)
+    N = sum(M)
+
+    fun(x) = log(x) / log(b)
+
+    sum([M[x,y] == 0.0 ? 0.0 : -(M[x,y]/N) * (fun(M[x,y]/N) - fun(sum(M[x,:])/N)) for x in 1:size(M)[1], y in 1:size(M)[2]])
+end
+
+
+function mutual_information(M; b = 2)
+    N = sum(M)
+
+    fun(x) = log(x) / log(b)
+
+    sum([M[x,y] == 0.0 ? 0.0 : (M[x,y]/N) * (fun(M[x,y]/N) - fun(sum(M[x,:])/N) - fun(sum(M[:,y]/N))) for x in 1:size(M)[1], y in 1:size(M)[2]])
+end
+
 

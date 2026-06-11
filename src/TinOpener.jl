@@ -22,6 +22,7 @@ import LinearAlgebra
 #import RCall
 import Statistics
 import TimeseriesSurrogates
+import DataStructures
 
 # source files
 #include("structs.jl")
@@ -58,6 +59,8 @@ export AbstractLinearGaussianSSM
 export SSM
 export AbstractSSM
 export BiBeta
+export AbstractModelFit
+export ModelParameters
 
 # exports (functions)
 export aic
@@ -68,6 +71,7 @@ export bin_time_natural
 export bootstrap
 export binary_to_proportion
 export bzc_kernel
+export conditional_entropy
 export convolve
 export expand_missing
 export filter!
@@ -84,11 +88,16 @@ export logistic
 export logit
 export loglikelihood
 export logpdf
+export lrtest
 export impute_kalman
 export impute_last!
 export mapply
 export momentmatch
+export mutual_information
+export numeric_to_mean
+export n_free_parameters
 export pdf
+export prepare_model
 export shuffle
 export simulate
 export smooth!
